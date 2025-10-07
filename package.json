@@ -1,0 +1,29 @@
+{
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.19.1"
+  },
+  "type": "module",
+  "scripts": {
+    "dev": "nodemon app.js"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  },
+  "name": "tirelire-daret-",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mazin0eg/Tirelire-Daret-.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mazin0eg/Tirelire-Daret-/issues"
+  },
+  "homepage": "https://github.com/mazin0eg/Tirelire-Daret-#readme"
+}

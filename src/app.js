@@ -1,23 +1,20 @@
 import express from "express";
-import jwt from "jsonwebtoken";
+
 import 'dotenv/config';
-import mongoose from "mongoose";
-import { getAllUsers , getMe ,register, login} from "./controllers/user.controller.js"
+import { getAllUsers, getMe, register, login } from "./controllers/user.controller.js";
+import {createGroup} from "./controllers/group.controller.js"
 const app = express();
 app.use(express.json());
 
 
 
 app.get("/users",getAllUsers);
-
-
-
-
 app.get("/me",getMe);
-
 app.post('/register' ,register)
-
 app.post('/login',login)
+
+
+app.post("/group" , createGroup)
 
 
 export default app;

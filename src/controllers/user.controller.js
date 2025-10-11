@@ -1,11 +1,9 @@
 import jwt from "jsonwebtoken";
 import User from "../moduls/user.model.js";
-import Counter from "../moduls/counter.model.js";
 import dotenv from "dotenv";
 import bcrypt from "bcryptjs";
 dotenv.config();
 
-// GET all users
 export const getAllUsers = async (req, res) => {
   try {
     const allUsers = await User.find();
@@ -31,7 +29,6 @@ export const getMe = (req, res) => {
 
 
 
-// POST / REGISTER 
 
 export const register = async(req , res)=>{
 try{
@@ -43,20 +40,11 @@ try{
   return res.status(400).json({message : "Ures already exist "})
  }
 
-
-    const counter = await Counter.findOneAndUpdate(
-      { model: "User" },
-      { $inc: { count: 1 } },
-      { new: true, upsert: true }
-    );
-
  const salt  = await bcrypt.genSalt(10)
 const hashpassword =  await bcrypt.hash(password , salt)
 
-console.log(hashpassword)
 
 const newUser = new User({
-      _id: counter.count, 
       username,
       password: hashpassword,
     });

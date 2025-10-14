@@ -13,7 +13,7 @@ export const getAllUsers = async (req, res) => {
   }
 };
 
-// GET /me
+
 export const getMe = (req, res) => {
   try {
     const token = req.header("Authorization")?.split(" ")[1];
@@ -75,7 +75,10 @@ export const login = async (req, res) => {
       
       if (!isMatch)  return res.status(401).json({ message: "Invalid password" });
 
-    const payload = { username };
+    const payload = { 
+      userId: user._id,
+      username: user.username 
+    };
     const accessToken = jwt.sign(payload, process.env.ACCESS_WEB_TOKEN, { expiresIn: "1h" });
 
     res.json({ accessToken });

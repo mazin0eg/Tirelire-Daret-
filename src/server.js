@@ -2,6 +2,7 @@
 import mongoose from "mongoose";
 import app from "./app.js";
 import 'dotenv/config';
+import { startTourProgressionCron } from "./services/tourProgressionService.js";
 
 // Connect to database
 mongoose.connect(process.env.MONGO_PATH)
@@ -12,4 +13,7 @@ mongoose.connect(process.env.MONGO_PATH)
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+  
+  // Start the automatic tour progression cron job
+  startTourProgressionCron();
 });

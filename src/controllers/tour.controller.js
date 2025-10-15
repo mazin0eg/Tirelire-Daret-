@@ -1,5 +1,6 @@
 import Tour from "../moduls/tour.model.js";
 import Group from "../moduls/group.model.js";
+import { checkAndAdvanceTours, advanceTourRound } from "../services/tourProgressionService.js";
 
 const calculateNextRoundDate = (startDate, frequency) => {
   const nextDate = new Date(startDate);
@@ -351,6 +352,94 @@ export const startTour = async (req, res) => {
   } catch (err) {
     console.error("StartTour Error:", err);
     res.status(500).json({ message: err.message });
+  }
+};
+
+// Check and advance all tours that are due for next round
+export const checkToursProgress = async (req, res) => {
+  try {
+    const advancedCount = await checkAndAdvanceTours();
+    
+    res.status(200).json({
+      message: `Vérifié les tours en cours`,
+      toursAdvanced: advancedCount
+    });
+  } catch (error) {
+    console.error("CheckToursProgress Error:", error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Manually advance a specific tour to next round (admin/creator only)
+export const advanceTour = async (req, res) => {
+  const { tourId } = req.params;
+
+  try {
+    const tour = await Tour.findById(tourId);
+    if (!tour) {
+      return res.status(404).json({ message: "Tour introuvable" });
+    }
+
+    // Check if user is tour creator
+    if (tour.createdBy.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: "Seul le créateur peut avancer le tour" });
+    }
+
+    const updatedTour = await advanceTourRound(tourId);
+    
+    res.status(200).json({
+      message: `Tour avancé au round ${updatedTour.currentRound}`,
+      tour: updatedTour
+    });
+  } catch (error) {
+    console.error("AdvanceTour Error:", error);
+    res.status(400).json({ message: error.message });
+  }
+};
+
+// Get current round info for a tour
+export const getTourCurrentRound = async (req, res) => {
+  const { tourId } = req.params;
+
+  try {
+    const tour = await Tour.findById(tourId)
+      .populate('groupId', 'name')
+      .populate('createdBy', 'username')
+      .populate('members.userId', 'username');
+
+    if (!tour) {
+      return res.status(404).json({ message: "Tour introuvable" });
+    }
+
+    const userId = req.user._id;
+    const isTourMember = tour.members.some(member => 
+      member.userId._id.toString() === userId.toString()
+    );
+    const isCreator = tour.createdBy._id.toString() === userId.toString();
+
+    if (!isTourMember && !isCreator) {
+      return res.status(403).json({ message: "Accès non autorisé à ce tour" });
+    }
+
+    const currentBeneficiary = tour.currentBeneficiary;
+    const nextBeneficiary = tour.getNextBeneficiary();
+    const isOverdue = tour.nextRoundDate && new Date() > tour.nextRoundDate;
+
+    res.status(200).json({
+      tourId: tour._id,
+      tourName: tour.name,
+      currentRound: tour.currentRound,
+      totalRounds: tour.totalRounds,
+      nextRoundDate: tour.nextRoundDate,
+      isOverdue,
+      status: tour.status,
+      currentBeneficiary,
+      nextBeneficiary,
+      isComplete: tour.isComplete()
+    });
+  } catch (error) {
+    console.error("GetTourCurrentRound Error:", error);
+    res.status(500).json({ message: error.message });
   }
 };
 

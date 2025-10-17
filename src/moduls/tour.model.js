@@ -60,6 +60,28 @@ const tourSchema = new mongoose.Schema({
     type: Date 
   },
   
+  rounds: [{
+    round: { type: Number, required: true },
+    recipient: {
+      userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+      username: { type: String },
+      position: { type: Number }
+    },
+    startDate: { type: Date },
+    endDate: { type: Date },
+    status: { type: String, enum: ["pending", "active", "processing", "completed", "failed"], default: "pending" },
+    payments: [{
+      userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+      paymentIntentId: { type: String },
+      amount: { type: Number },
+      status: { type: String, enum: ["pending", "processing", "succeeded", "failed"], default: "pending" },
+      completedAt: { type: Date },
+      failedAt: { type: Date }
+    }],
+    totalAmount: { type: Number },
+    completedAt: { type: Date }
+  }],
+  
   
   members: [{
     userId: { 

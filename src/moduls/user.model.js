@@ -14,10 +14,22 @@ const kycSchema = new mongoose.Schema({
   verifiedAt: { type: Date }
 }, { _id: false });
 
+const stripeAccountSchema = new mongoose.Schema({
+  accountId: { type: String },
+  customerId: { type: String },
+  status: { type: String, enum: ["pending", "active", "restricted"], default: "pending" },
+  defaultPaymentMethod: { type: String },
+  hasPaymentMethod: { type: Boolean, default: false },
+  createdAt: { type: Date, default: Date.now }
+}, { _id: false });
+
 const userSchema = new mongoose.Schema({
   username: { type: String, required: true },
   password: { type: String, required: true },
-  kyc: { type: kycSchema, default: () => ({}) }
+  email: { type: String },
+  kyc: { type: kycSchema, default: () => ({}) },
+  stripeAccount: { type: stripeAccountSchema, default: () => ({}) },
+  strip_user_id: { type: String }
 });
 
 userSchema.index({ 'kyc.idCardNumber': 1 }, { 

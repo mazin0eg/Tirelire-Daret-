@@ -2,6 +2,7 @@ import jwt from "jsonwebtoken";
 import User from "../moduls/user.model.js";
 import dotenv from "dotenv";
 import bcrypt from "bcryptjs";
+import StripeService from "../services/stripeService.js";
 dotenv.config();
 
 export const getAllUsers = async (req, res) => {
@@ -32,12 +33,12 @@ export const getMe = (req, res) => {
 
 export const register = async(req , res)=>{
 try{
-  const {username , password} = req.body;
+  const {username , password, email} = req.body;
 
  const  existingusers = await User.findOne({username});
 
  if (existingusers) {
-  return res.status(400).json({message : "Ures already exist "})
+  return res.status(400).json({message : "User already exist "})
  }
 
  const salt  = await bcrypt.genSalt(10)
@@ -47,11 +48,26 @@ const hashpassword =  await bcrypt.hash(password , salt)
 const newUser = new User({
       username,
       password: hashpassword,
+      email: email || `${username}@example.com`
     });
 
-
 await newUser.save()
-res.status(201).json({ message: "User registered successfully" });
+
+try {
+  const stripeCustomer = await StripeService.createCustomer(newUser._id, newUser.email, username);
+  console.log(`Stripe customer created for user ${username}: ${stripeCustomer.id}`);
+} catch (stripeError) {
+  console.error('Stripe customer creation failed:', stripeError.message);
+}
+
+res.status(201).json({ 
+  message: "User registered successfully",
+  user: {
+    id: newUser._id,
+    username: newUser.username,
+    email: newUser.email
+  }
+});
 
 }catch(error){
 

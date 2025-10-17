@@ -3,6 +3,20 @@ import 'dotenv/config';
 import { getAllUsers, getMe, register, login } from "./controllers/user.controller.js";
 import {createGroup, createGroupManual, addMemberToGroup, getAllGroups, removeMemberFromGroup} from "./controllers/group.controller.js"
 import { submitKYC, getKYCStatus, approveKYC, rejectKYC, checkIdCardUnique } from "./controllers/kyc.controller.js";
+import { 
+  createStripeAccount, 
+  createCustomerAccount, 
+  attachPaymentMethod, 
+  createPaymentSetup,
+  processRoundPayments,
+  getPaymentStatus,
+  getUserStripeStatus,
+  checkPaymentProgress,
+  getAccountBalance,
+  getUserBalance,
+  getUserBalanceById,
+  createPayout
+} from "./controllers/stripe.controller.js";
 import multer from 'multer';
 
 const upload = multer({ dest: 'uploads/' });
@@ -40,5 +54,17 @@ app.post('/kyc/check-unique', checkIdCardUnique);
 app.post('/kyc/:userId/approve', approveKYC);
 app.post('/kyc/:userId/reject', rejectKYC);
 
+app.post('/stripe/create-account', authenticateToken, createStripeAccount);
+app.post('/stripe/create-customer', authenticateToken, createCustomerAccount);
+app.post('/stripe/attach-payment', authenticateToken, attachPaymentMethod);
+app.post('/stripe/setup-payment', authenticateToken, createPaymentSetup);
+app.post('/stripe/process-payments/:tourId', authenticateToken, processRoundPayments);
+app.get('/stripe/payment-status/:tourId', authenticateToken, getPaymentStatus);
+app.get('/stripe/user-status', authenticateToken, getUserStripeStatus);
+app.post('/stripe/check-progress/:tourId', authenticateToken, checkPaymentProgress);
+app.get('/stripe/balance', authenticateToken, getAccountBalance);
+app.get('/stripe/balance/username/:username', getUserBalance);
+app.get('/stripe/balance/id/:userId', getUserBalanceById);
+app.post('/stripe/payout', authenticateToken, createPayout);
 
 export default app;

@@ -8,10 +8,13 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.19.1",
     "mongoose-sequence": "^6.0.1",
-    "multer": "^2.0.2"
+    "multer": "^2.0.2",
+    "node-fetch": "^3.3.2",
+    "stripe": "^19.1.0"
   },
   "type": "module",
   "scripts": {
+    "start": "node ./src/server.js",
     "dev": "node --watch ./src/server.js",
     "test": "cross-env NODE_ENV=test jest --runInBand --config jest.config.cjs"
   },
@@ -27,8 +30,8 @@
   },
   "name": "tirelire-daret-",
   "version": "1.0.0",
-  "description": "",
-  "main": "app.js",
+  "description": "Group savings platform with face verification and Stripe payments",
+  "main": "src/server.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/mazin0eg/Tirelire-Daret-.git"

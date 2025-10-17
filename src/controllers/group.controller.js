@@ -2,7 +2,6 @@ import User from "../moduls/user.model.js";
 import Group from "../moduls/group.model.js";
 
 
-// Create group with authenticated user as owner (automatic)
 export const createGroup = async (req, res) => {
   const { name, memberIds } = req.body;
 
@@ -12,8 +11,11 @@ export const createGroup = async (req, res) => {
       return res.status(400).json({ message: "Group déjà existant" });
     }
 
-    // Use authenticated user as owner (req.user is set by auth middleware)
     const owner = req.user;
+
+    if (!owner.kyc || owner.kyc.status !== 'verified') {
+      return res.status(403).json({ message: 'KYC requis pour créer un groupe' });
+    }
 
     let membersData = [];
     if (memberIds && memberIds.length > 0) {
@@ -22,7 +24,6 @@ export const createGroup = async (req, res) => {
         return res.status(400).json({ message: "Un ou plusieurs membres introuvables" });
       }
       
-      // Filter out owner from members if included
       membersData = validMembers
         .filter(user => user._id.toString() !== owner._id.toString())
         .map(user => ({
@@ -49,7 +50,6 @@ export const createGroup = async (req, res) => {
   }
 };
 
-// Create group with manual owner assignment (for admin use)
 export const createGroupManual = async (req, res) => {
   const { name, ownerId, memberIds } = req.body;
 
@@ -59,7 +59,6 @@ export const createGroupManual = async (req, res) => {
       return res.status(400).json({ message: "Group déjà existant" });
     }
 
-    // Validate owner exists
     const owner = await User.findById(ownerId);
     if (!owner) {
       return res.status(404).json({ message: "Propriétaire du groupe introuvable" });
@@ -72,7 +71,6 @@ export const createGroupManual = async (req, res) => {
         return res.status(400).json({ message: "Un ou plusieurs membres introuvables" });
       }
       
-      // Filter out owner from members if included
       membersData = validMembers
         .filter(user => user._id.toString() !== ownerId.toString())
         .map(user => ({
@@ -119,7 +117,6 @@ export const addMemberToGroup = async (req, res) => {
       return res.status(404).json({ message: "Groupe introuvable" });
     }
 
-    // Check if requester is the owner (optional - for authorization)
     if (requesterId && group.owner.userId.toString() !== requesterId.toString()) {
       return res.status(403).json({ message: "Seul le propriétaire peut ajouter des membres" });
     }
@@ -129,12 +126,14 @@ export const addMemberToGroup = async (req, res) => {
       return res.status(404).json({ message: "Utilisateur introuvable" });
     }
 
-    // Check if user is already the owner
+    if (!user.kyc || user.kyc.status !== 'verified') {
+      return res.status(403).json({ message: 'Le membre ajouté doit avoir un KYC vérifié' });
+    }
+
     if (group.owner.userId.toString() === userId.toString()) {
       return res.status(400).json({ message: "L'utilisateur est déjà le propriétaire du groupe" });
     }
 
-    // Check if user is already a member
     const isAlreadyMember = group.members.some(
       member => member.userId.toString() === userId.toString()
     );
@@ -172,17 +171,14 @@ export const removeMemberFromGroup = async (req, res) => {
       return res.status(404).json({ message: "Groupe introuvable" });
     }
 
-    
     if (group.owner.userId.toString() !== ownerId.toString()) {
       return res.status(403).json({ message: "Seul le propriétaire peut supprimer des membres" });
     }
 
-    // Check if trying to remove the owner
     if (group.owner.userId.toString() === userId.toString()) {
       return res.status(400).json({ message: "Le propriétaire ne peut pas être supprimé du groupe" });
     }
 
-    // Find and remove the member
     const memberIndex = group.members.findIndex(
       member => member.userId.toString() === userId.toString()
     );

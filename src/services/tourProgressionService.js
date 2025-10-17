@@ -1,15 +1,13 @@
 import Tour from '../moduls/tour.model.js';
 
-// Function to check and advance tours that are due for next round
 export const checkAndAdvanceTours = async () => {
   try {
     const now = new Date();
     
-    // Find all active tours where nextRoundDate has passed
     const toursToAdvance = await Tour.find({
       status: 'active',
       nextRoundDate: { $lte: now },
-      $expr: { $lt: ['$currentRound', '$totalRounds'] } // currentRound < totalRounds
+      $expr: { $lt: ['$currentRound', '$totalRounds'] }
     });
 
     console.log(`Found ${toursToAdvance.length} tours ready to advance`);
@@ -18,17 +16,14 @@ export const checkAndAdvanceTours = async () => {
       try {
         console.log(`Advancing tour ${tour._id} from round ${tour.currentRound} to ${tour.currentRound + 1}`);
         
-        // Mark current round beneficiary as received if not already
         const currentBeneficiary = tour.members.find(member => member.position === tour.currentRound);
         if (currentBeneficiary && !currentBeneficiary.hasReceived) {
           currentBeneficiary.hasReceived = true;
           currentBeneficiary.receivedDate = new Date();
         }
         
-        // Advance to next round
         tour.advanceToNextRound();
         
-        // Save the updated tour
         await tour.save();
         
         console.log(`Tour ${tour._id} advanced to round ${tour.currentRound}`);
@@ -45,7 +40,6 @@ export const checkAndAdvanceTours = async () => {
   }
 };
 
-// Function to manually advance a specific tour
 export const advanceTourRound = async (tourId) => {
   try {
     const tour = await Tour.findById(tourId);
@@ -62,14 +56,12 @@ export const advanceTourRound = async (tourId) => {
       throw new Error('Tour is already complete');
     }
     
-    // Mark current round beneficiary as received
     const currentBeneficiary = tour.members.find(member => member.position === tour.currentRound);
     if (currentBeneficiary && !currentBeneficiary.hasReceived) {
       currentBeneficiary.hasReceived = true;
       currentBeneficiary.receivedDate = new Date();
     }
     
-    // Advance to next round
     tour.advanceToNextRound();
     
     await tour.save();
@@ -80,16 +72,14 @@ export const advanceTourRound = async (tourId) => {
   }
 };
 
-// Cron job function - call this every hour or daily
 export const startTourProgressionCron = () => {
-  // Check tours every hour
   setInterval(async () => {
     console.log('Checking tours for round progression...');
     const advancedCount = await checkAndAdvanceTours();
     if (advancedCount > 0) {
       console.log(`Advanced ${advancedCount} tours`);
     }
-  }, 60 * 60 * 1000); // 1 hour = 60 * 60 * 1000 milliseconds
+  }, 60 * 60 * 1000);
   
   console.log('Tour progression cron job started (runs every hour)');
 };

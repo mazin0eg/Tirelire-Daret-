@@ -141,18 +141,14 @@ tourSchema.methods.getNextBeneficiary = function() {
   return null;
 };
 
-// Method to check if tour is complete
 tourSchema.methods.isComplete = function() {
   return this.currentRound > this.totalRounds || 
          this.members.every(member => member.hasReceived);
 };
 
-// Method to advance to next round
 tourSchema.methods.advanceToNextRound = function() {
   if (this.currentRound < this.totalRounds) {
     this.currentRound += 1;
-    
-    // Calculate next round date based on frequency
     const nextDate = new Date(this.nextRoundDate || this.startDate);
     switch (this.frequency) {
       case 'daily':
@@ -173,7 +169,6 @@ tourSchema.methods.advanceToNextRound = function() {
     }
     this.nextRoundDate = nextDate;
     
-    // Check if tour is now complete
     if (this.isComplete()) {
       this.status = 'completed';
       this.completedAt = new Date();
@@ -181,14 +176,11 @@ tourSchema.methods.advanceToNextRound = function() {
   }
 };
 
-// Pre-save middleware to validate members
 tourSchema.pre('save', function(next) {
-  // Ensure totalRounds matches number of members
   if (this.members.length > 0 && this.totalRounds !== this.members.length) {
     return next(new Error('Total rounds must equal number of members'));
   }
   
-  // Ensure all positions are unique and sequential
   const positions = this.members.map(m => m.position).sort((a, b) => a - b);
   for (let i = 0; i < positions.length; i++) {
     if (positions[i] !== i + 1) {

@@ -278,7 +278,6 @@ export const getTourById = async (req, res) => {
   }
 };
 
-// Start tour for testing (without auth)
 export const startTourManual = async (req, res) => {
   const { tourId } = req.params;
 
@@ -355,7 +354,6 @@ export const startTour = async (req, res) => {
   }
 };
 
-// Check and advance all tours that are due for next round
 export const checkToursProgress = async (req, res) => {
   try {
     const advancedCount = await checkAndAdvanceTours();
@@ -370,7 +368,6 @@ export const checkToursProgress = async (req, res) => {
   }
 };
 
-// Manually advance a specific tour to next round (admin/creator only)
 export const advanceTour = async (req, res) => {
   const { tourId } = req.params;
 
@@ -380,7 +377,6 @@ export const advanceTour = async (req, res) => {
       return res.status(404).json({ message: "Tour introuvable" });
     }
 
-    // Check if user is tour creator
     if (tour.createdBy.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: "Seul le créateur peut avancer le tour" });
     }
@@ -397,7 +393,6 @@ export const advanceTour = async (req, res) => {
   }
 };
 
-// Get current round info for a tour
 export const getTourCurrentRound = async (req, res) => {
   const { tourId } = req.params;
 

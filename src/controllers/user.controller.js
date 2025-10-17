@@ -62,7 +62,6 @@ res.status(201).json({ message: "User registered successfully" });
 };
 
 
-// POST /login
 export const login = async (req, res) => {
   const { username, password } = req.body;
 
